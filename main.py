@@ -30,9 +30,9 @@ class SkullKingApp(App):
         self.root_layout.add_widget(self.background)
 
     # Main UI layout
-        self.main_layout = BoxLayout(orientation='vertical', padding=10, spacing=50, size_hint=(0.9, 0.9), pos_hint={"center_x": 0.5, "center_y": 0.6})
+        self.main_layout = BoxLayout(orientation='vertical', padding=10, spacing=50, size_hint=(0.9, 0.9), pos_hint={"center_x": 0.5, "center_y": 0.55})
 
-        self.label = Label(text="Enter player names:", size_hint=(1, None), halign="center", valign="middle", height=100, color=(1, 1, 1, 1), font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2)
+        self.label = Label(text="Enter player names:", size_hint=(1, None), halign="center", valign="middle", height=500, color=(1, 1, 1, 1), font_size=80, bold=True, outline_color=(0, 0, 0, 1), outline_width=4)
         self.label.bind(size=self.label.setter('text_size'))
         self.main_layout.add_widget(self.label)
 
@@ -41,28 +41,33 @@ class SkullKingApp(App):
         self.main_layout.add_widget(self.player_names_layout)
 
     # Add player input field
-        self.player_name_input = TextInput(hint_text="Enter player name", multiline=False, size_hint_y=None, height=80, background_color=(0.2, 0.2, 0.2, 1), foreground_color=(1, 1, 1, 1))
+        self.player_name_input = TextInput(hint_text="Enter player name", multiline=False, size_hint=(None, None), width=600, height=120, pos_hint={"center_x": 0.5}, background_color=(0.2, 0.2, 0.2, 1), foreground_color=(1, 1, 1, 1))
         self.main_layout.add_widget(self.player_name_input)
 
     # Button to add player
-        self.add_player_button = Button(text="Add Player", size_hint=(None, None), width=300, height=80, pos_hint={"center_x": 0.5}, background_color=(0.1, 0.5, 0.8, 1), color=(1, 1, 1, 1), bold=True)
+        self.add_player_button = Button(text="Add Player", size_hint=(None, None), width=600, height=200, pos_hint={"center_x": 0.5}, background_color=(0.1, 0.5, 0.8, 1), color=(1, 1, 1, 1), bold=True)
         self.add_player_button.bind(on_press=self.add_player)
         self.main_layout.add_widget(self.add_player_button)
 
     # Button to confirm players and proceed
-        self.confirm_button = Button(text="Confirm players", size_hint=(None, None), width=300, height=80, pos_hint={"center_x": 0.5}, background_color=(0.1, 0.8, 0.5, 1), color=(1, 1, 1, 1), bold=True)
+        self.confirm_button = Button(text="Confirm players", size_hint=(None, None), width=600, height=200, pos_hint={"center_x": 0.5}, background_color=(0.1, 0.8, 0.5, 1), color=(1, 1, 1, 1), bold=True)
         self.confirm_button.bind(on_press=self.show_bid_inputs)
         self.main_layout.add_widget(self.confirm_button)
+
+    #Unsichtbarer button weil ich sonst die gerade erstellten Widgets irgendwie nicht nach oben verschoben bekomme. Sehr unsauber aber juckt
+        self.unsichtbarer_button = Button(text="nutte", size_hint=(None, None), width=600, height=600, pos_hint={"center_x": 0.5}, background_color=(0.1, 0.8, 0.5, 1), color=(1, 1, 1, 1), bold=True, opacity=0)
+        self.main_layout.add_widget(self.unsichtbarer_button)
 
         self.players = []  # List to store player names
         self.root_layout.add_widget(self.main_layout)
         return self.root_layout
-
+    
+    
     def add_player(self, instance):
         player_name = self.player_name_input.text.strip()
         if player_name and player_name not in self.players:
             self.players.append(player_name)
-            self.player_names_layout.add_widget(Label(text=player_name, size_hint_y=None, height=40, color=(1, 1, 1, 1), font_size=30))
+            self.player_names_layout.add_widget(Label(text=player_name, size_hint_y=None, height=60, color=(1, 1, 1, 1), bold=True, font_size=50, outline_color=(0, 0, 0, 1), outline_width=3))
             self.player_name_input.text = ""  # Clear input field
 
     def show_bid_inputs(self, instance):
@@ -88,15 +93,15 @@ class SkullKingApp(App):
 
         table_layout = GridLayout(cols=(len(self.players)*3) + 1, size_hint_x=1, size_hint_y=None, height=1200, pos_hint={"center_x": 0.5})
 
-        table_layout.add_widget(Label(text="Round", size_hint_x=0.1, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=1.5))
+        table_layout.add_widget(Label(text="Round", size_hint_x=0.1, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2))
 
         for name in self.players:
-            table_layout.add_widget(Label(text=f"{name}\n Score", size_hint_x=0.4, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=1.5, halign="center", valign="middle", text_size=(None, None)))  # Score breiter
-            table_layout.add_widget(Label(text="B", size_hint_x=0.1, height=50, font_size=20, bold=True, outline_color=(0, 0, 0, 1), outline_width=1.5))  # B kleiner
-            table_layout.add_widget(Label(text="R", size_hint_x=0.1, height=50, font_size=20, bold=True, outline_color=(0, 0, 0, 1), outline_width=1.5))  # R auch kleiner
+            table_layout.add_widget(Label(text=f"{name}\n Score", size_hint_x=0.4, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2, halign="center", valign="middle", text_size=(None, None)))  # Score breiter
+            table_layout.add_widget(Label(text="B", size_hint_x=0.1, height=50, font_size=20, bold=True, outline_color=(0, 0, 0, 1), outline_width=2))  # B kleiner
+            table_layout.add_widget(Label(text="R", size_hint_x=0.1, height=50, font_size=20, bold=True, outline_color=(0, 0, 0, 1), outline_width=2))  # R auch kleiner
 
         for round_num in range(1, self.rounds + 1):
-            table_layout.add_widget(Label(text=str(round_num), size_hint_x=0.1, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=1.5))
+            table_layout.add_widget(Label(text=str(round_num), size_hint_x=0.1, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2))
 
             for name in self.players:
                 score = self.scores[name][round_num - 1]
@@ -104,15 +109,15 @@ class SkullKingApp(App):
                 #with score_text.canvas.after:
                     #Color(1, 0, 0, 1)  # Rote Farbe
                     #line = Line(rectangle=(score_text.x, score_text.y, score_text.width, score_text.height), width=2)
-                table_layout.add_widget(Label(text=score_text, size_hint_x=0.4, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=1.5))
+                table_layout.add_widget(Label(text=score_text, size_hint_x=0.4, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2))
 
                 bid = self.bids[name][round_num - 1]
                 bid_text = "-" if bid == -1 else str(bid)
-                table_layout.add_widget(Label(text=bid_text, size_hint_x=0.1, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=1.5))
+                table_layout.add_widget(Label(text=bid_text, size_hint_x=0.1, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2))
 
                 rbid = self.received_bids[name][round_num - 1]
                 rbid_text = "-" if rbid == -1 else str(rbid)
-                table_layout.add_widget(Label(text=rbid_text, size_hint_x=0.1, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=1.5))
+                table_layout.add_widget(Label(text=rbid_text, size_hint_x=0.1, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2))
 
         #scroll_view = ScrollView(size_hint=(1, None), size=(2000, 1000), pos_hint={"center_x": 0.5})
         #with scroll_view.canvas.after:
@@ -122,19 +127,19 @@ class SkullKingApp(App):
         self.table_and_input_layout.add_widget(table_layout)
 
         input_layout = BoxLayout(orientation='vertical', size_hint_y=None, height=500, pos_hint={"center_x": 0.5})
-        round_label = Label(text=f"Round {self.current_round} - Bids", size_hint_y=None, height=100, color=(1, 1, 1, 1), font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=1.5)
+        round_label = Label(text=f"Round {self.current_round} - Bids", size_hint_y=None, height=100, color=(1, 1, 1, 1), font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2)
         input_layout.add_widget(round_label)
 
         self.bid_inputs = {}
         for name in self.players:
             player_box = BoxLayout(orientation='horizontal', size_hint_y=None, height=100, pos_hint={"center_x": 0.5})
-            player_label = Label(text=name, size_hint_x=0.5, color=(1, 1, 1, 1), font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=1.5)
+            player_label = Label(text=name, size_hint_x=0.5, color=(1, 1, 1, 1), font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2)
             player_box.add_widget(player_label)
 
             minus_button = Button(text="-", size_hint_x=0.2, background_color=(0.6, 0.2, 0.2, 1), color=(1, 1, 1, 1), bold=True)
             minus_button.bind(on_press=self.decrease_bid)
 
-            bid_label = Label(text="0", size_hint_x=0.3, color=(1, 1, 1, 1), font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=1.5)
+            bid_label = Label(text="0", size_hint_x=0.3, color=(1, 1, 1, 1), font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2)
 
             plus_button = Button(text="+", size_hint_x=0.2, background_color=(0.2, 0.6, 0.2, 1), color=(1, 1, 1, 1), bold=True)
             plus_button.bind(on_press=self.increase_bid)
@@ -175,15 +180,15 @@ class SkullKingApp(App):
 
         table_layout = GridLayout(cols=(len(self.players)*3) + 1, size_hint_x=1, size_hint_y=None, height=1200, pos_hint={"center_x": 0.5})
 
-        table_layout.add_widget(Label(text="Round", size_hint_x=0.1, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=1.5))
+        table_layout.add_widget(Label(text="Round", size_hint_x=0.1, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2))
 
         for name in self.players:
-            table_layout.add_widget(Label(text=f"{name}\n Score", size_hint_x=0.4, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=1.5, halign="center", valign="middle", text_size=(None, None)))  # Score breiter
-            table_layout.add_widget(Label(text="B", size_hint_x=0.1, height=50, font_size=20, bold=True, outline_color=(0, 0, 0, 1), outline_width=1.5))  # B kleiner
-            table_layout.add_widget(Label(text="R", size_hint_x=0.1, height=50, font_size=20, bold=True, outline_color=(0, 0, 0, 1), outline_width=1.5))  # R auch kleiner
+            table_layout.add_widget(Label(text=f"{name}\n Score", size_hint_x=0.4, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2, halign="center", valign="middle", text_size=(None, None)))  # Score breiter
+            table_layout.add_widget(Label(text="B", size_hint_x=0.1, height=50, font_size=20, bold=True, outline_color=(0, 0, 0, 1), outline_width=2))  # B kleiner
+            table_layout.add_widget(Label(text="R", size_hint_x=0.1, height=50, font_size=20, bold=True, outline_color=(0, 0, 0, 1), outline_width=2))  # R auch kleiner
 
         for round_num in range(1, self.rounds + 1):
-            table_layout.add_widget(Label(text=str(round_num), size_hint_x=0.1, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=1.5))
+            table_layout.add_widget(Label(text=str(round_num), size_hint_x=0.1, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2))
 
             for name in self.players:
                 score = self.scores[name][round_num - 1]
@@ -191,15 +196,15 @@ class SkullKingApp(App):
                 #with score_text.canvas.after:
                     #Color(1, 0, 0, 1)  # Rote Farbe
                     #line = Line(rectangle=(score_text.x, score_text.y, score_text.width, score_text.height), width=2)
-                table_layout.add_widget(Label(text=score_text, size_hint_x=0.4, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=1.5))
+                table_layout.add_widget(Label(text=score_text, size_hint_x=0.4, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2))
 
                 bid = self.bids[name][round_num - 1]
                 bid_text = "-" if bid == -1 else str(bid)
-                table_layout.add_widget(Label(text=bid_text, size_hint_x=0.1, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=1.5))
+                table_layout.add_widget(Label(text=bid_text, size_hint_x=0.1, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2))
 
                 rbid = self.received_bids[name][round_num - 1]
                 rbid_text = "-" if rbid == -1 else str(rbid)
-                table_layout.add_widget(Label(text=rbid_text, size_hint_x=0.1, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=1.5))
+                table_layout.add_widget(Label(text=rbid_text, size_hint_x=0.1, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2))
 
         #scroll_view = ScrollView(size_hint=(1, None), size=(2000, 1000), pos_hint={"center_x": 0.5})
         #with scroll_view.canvas.after:
@@ -306,12 +311,12 @@ class SkullKingApp(App):
     def show_final_scores(self):
         self.main_layout.clear_widgets()
 
-        score_layout = BoxLayout(orientation='vertical', padding=10, spacing=10, size_hint=(1, 1), pos_hint={"center_x": 0.5})
-        score_layout.add_widget(Label(text="Final Scores", size_hint_y=None, height=40, color=(1, 1, 1, 1), font_size=20))
+        score_layout = BoxLayout(orientation='vertical', padding=10, spacing=20, size_hint=(1, 1), pos_hint={"center_x": 0.5})
+        score_layout.add_widget(Label(text="Final Scores", size_hint_y=None, height=100, color=(1, 1, 1, 1), font_size=100, bold=True, outline_color=(0, 0, 0, 1), outline_width=4))
 
         for name, scores in self.scores.items():
             total_score = self.scores[name][self.current_round - 1]
-            score_layout.add_widget(Label(text=f"{name}: {total_score} points", size_hint_y=None, height=40, color=(1, 1, 1, 1), font_size=18))
+            score_layout.add_widget(Label(text=f"{name}: {total_score} points", size_hint_y=None, height=80, color=(1, 1, 1, 1), font_size=80, bold=True, outline_color=(0, 0, 0, 1), outline_width=2))
 
         self.main_layout.add_widget(score_layout)
 
