@@ -1,6 +1,3 @@
-import os
-os.system("pip install matplotlib")
-
 from kivy.config import Config
 
 # Configure window size to simulate a typical smartphone format
