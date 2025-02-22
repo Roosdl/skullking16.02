@@ -17,7 +17,7 @@ from kivy.uix.image import Image
 from kivy.uix.floatlayout import FloatLayout
 #from kivy.graphics import Color, Line
 import matplotlib.pyplot as plt
-from kivy.uix.image import Image
+#from kivy.uix.image import Image
 from kivy.graphics.texture import Texture
 
 class SkullKingApp(App):
