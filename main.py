@@ -1,353 +1,196 @@
 from kivy.config import Config
 
-# Configure window size to simulate a typical smartphone format
 Config.set('graphics', 'width', '1080')
 Config.set('graphics', 'height', '2400')
 Config.set('graphics', 'resizable', False)
 Config.set('graphics', 'fullscreen', '0')
 
 from kivy.app import App
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.textinput import TextInput
-from kivy.uix.label import Label
-from kivy.uix.button import Button
-from kivy.uix.gridlayout import GridLayout
-#from kivy.uix.scrollview import ScrollView
+from kivy.uix.widget import Widget
 from kivy.uix.image import Image
-from kivy.uix.floatlayout import FloatLayout
-#from kivy.graphics import Color, Line
-import matplotlib.pyplot as plt
-#from kivy.uix.image import Image
-from kivy.graphics.texture import Texture
+from kivy.uix.relativelayout import RelativeLayout
+from kivy.uix.button import Button
+from kivy.uix.label import Label
+from kivy.uix.modalview import ModalView
+from collections import deque
 
-class SkullKingApp(App):
-    def build(self):
-    # Root layout with a background image
-        self.root_layout = FloatLayout()
+# Gerätestandorte mit Bildsymbolen
+geraete = [
+    {'pos': (0.8, 0.3), 'symbol': 'Laufband.png', 'name': 'Laufband', 'übung': 'Laufband.png', 'typ': 'laufband'},
+    {'pos': (0.8, 0.7), 'symbol': 'Bankdruecken.png', 'name': 'Bankdruecken', 'übung': 'Bankdruecken.png', 'typ': 'brust'},
+    {'pos': (0.8, 0.63), 'symbol': 'BrustMaschine.png', 'name': 'Brustmaschine', 'übung': 'BrustMaschine.png', 'typ': 'brust'},
+    {'pos': (0.2, 0.35), 'symbol': 'BrustMaschineZwei.png', 'name': 'Brustmaschine 2', 'übung': 'BrustMaschineZwei.png', 'typ': 'brust'},
+    {'pos': (0.55, 0.45), 'symbol': 'Dips.png', 'name': 'Dips', 'übung': 'Dips.png', 'typ': 'trizeps'},
+    {'pos': (0.7, 0.7), 'symbol': 'Kabel.png', 'name': 'Kabelzug', 'übung': 'Kabel.png', 'typ': 'kabel'},
+    {'pos': (0.7, 0.63), 'symbol': 'Hantel.png', 'name': 'Hanteltraining', 'übung': 'Hantel.png', 'typ': 'hantel'}
+]
 
-    # Add a background image
-        self.background = Image(source='background.jpg', allow_stretch=True, keep_ratio=False, size_hint=(1, 1), pos_hint={"center_x": 0.5, "center_y": 0.5})
-        self.root_layout.add_widget(self.background)
-
-    # Main UI layout
-        self.main_layout = BoxLayout(orientation='vertical', padding=10, spacing=50, size_hint=(0.9, 0.9), pos_hint={"center_x": 0.5, "center_y": 0.55})
-
-        self.label = Label(text="Enter player names:", size_hint=(1, None), halign="center", valign="middle", height=500, color=(1, 1, 1, 1), font_size=80, bold=True, outline_color=(0, 0, 0, 1), outline_width=4)
-        self.label.bind(size=self.label.setter('text_size'))
-        self.main_layout.add_widget(self.label)
-
-    # Layout for player name inputs
-        self.player_names_layout = BoxLayout(orientation='vertical', padding=10, spacing=10, size_hint=(1, None))
-        self.main_layout.add_widget(self.player_names_layout)
-
-    # Add player input field
-        self.player_name_input = TextInput(hint_text="Enter player name", multiline=False, size_hint=(None, None), width=600, height=120, pos_hint={"center_x": 0.5}, background_color=(0.2, 0.2, 0.2, 1), foreground_color=(1, 1, 1, 1))
-        self.main_layout.add_widget(self.player_name_input)
-
-    # Button to add player
-        self.add_player_button = Button(text="Add Player", size_hint=(None, None), width=600, height=200, pos_hint={"center_x": 0.5}, background_color=(0.1, 0.5, 0.8, 1), color=(1, 1, 1, 1), bold=True)
-        self.add_player_button.bind(on_press=self.add_player)
-        self.main_layout.add_widget(self.add_player_button)
-
-    # Button to confirm players and proceed
-        self.confirm_button = Button(text="Confirm players", size_hint=(None, None), width=600, height=200, pos_hint={"center_x": 0.5}, background_color=(0.1, 0.8, 0.5, 1), color=(1, 1, 1, 1), bold=True)
-        self.confirm_button.bind(on_press=self.show_bid_inputs)
-        self.main_layout.add_widget(self.confirm_button)
-
-    #Unsichtbarer button weil ich sonst die gerade erstellten Widgets irgendwie nicht nach oben verschoben bekomme. Sehr unsauber aber juckt
-        self.unsichtbarer_button = Button(text="nutte", size_hint=(None, None), width=600, height=600, pos_hint={"center_x": 0.5}, background_color=(0.1, 0.8, 0.5, 1), color=(1, 1, 1, 1), bold=True, opacity=0)
-        self.main_layout.add_widget(self.unsichtbarer_button)
-
-        self.players = []  # List to store player names
-        self.root_layout.add_widget(self.main_layout)
-        return self.root_layout
-    
-    
-    def add_player(self, instance):
-        player_name = self.player_name_input.text.strip()
-        if player_name and player_name not in self.players:
-            self.players.append(player_name)
-            self.player_names_layout.add_widget(Label(text=player_name, size_hint_y=None, height=60, color=(1, 1, 1, 1), bold=True, font_size=50, outline_color=(0, 0, 0, 1), outline_width=3))
-            self.player_name_input.text = ""  # Clear input field
-
-    def show_bid_inputs(self, instance):
-        if not self.players:
-            self.label.text = "Please add at least one player!"
-            return
-
-        self.main_layout.clear_widgets()
-        self.rounds = 10
-        self.current_round = 1
-        self.bids = {name: [-1] * self.rounds for name in self.players}
-        self.received_bids = {name: [-1] * self.rounds for name in self.players}
-        self.scores = {name: [-1] * self.rounds for name in self.players}
-
-        self.table_and_input_layout = BoxLayout(orientation='vertical', padding=10, spacing=10, size_hint=(1, 1), pos_hint={"center_x": 0.5})
-        self.main_layout.add_widget(self.table_and_input_layout)
-
-        self.update_table_and_input()
-
-
-    def update_table_and_input(self):
-        self.table_and_input_layout.clear_widgets()
-
-        table_layout = GridLayout(cols=(len(self.players)*3) + 1, size_hint_x=1, size_hint_y=None, height=1200, pos_hint={"center_x": 0.5})
-
-        table_layout.add_widget(Label(text="Round", size_hint_x=0.1, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2))
-
-        for name in self.players:
-            table_layout.add_widget(Label(text=f"{name}\n Score", size_hint_x=0.4, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2, halign="center", valign="middle", text_size=(None, None)))  # Score breiter
-            table_layout.add_widget(Label(text="B", size_hint_x=0.1, height=50, font_size=20, bold=True, outline_color=(0, 0, 0, 1), outline_width=2))  # B kleiner
-            table_layout.add_widget(Label(text="R", size_hint_x=0.1, height=50, font_size=20, bold=True, outline_color=(0, 0, 0, 1), outline_width=2))  # R auch kleiner
-
-        for round_num in range(1, self.rounds + 1):
-            table_layout.add_widget(Label(text=str(round_num), size_hint_x=0.1, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2))
-
-            for name in self.players:
-                score = self.scores[name][round_num - 1]
-                score_text = "-" if score == -1 else str(score)
-                #with score_text.canvas.after:
-                    #Color(1, 0, 0, 1)  # Rote Farbe
-                    #line = Line(rectangle=(score_text.x, score_text.y, score_text.width, score_text.height), width=2)
-                table_layout.add_widget(Label(text=score_text, size_hint_x=0.4, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2))
-
-                bid = self.bids[name][round_num - 1]
-                bid_text = "-" if bid == -1 else str(bid)
-                table_layout.add_widget(Label(text=bid_text, size_hint_x=0.1, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2))
-
-                rbid = self.received_bids[name][round_num - 1]
-                rbid_text = "-" if rbid == -1 else str(rbid)
-                table_layout.add_widget(Label(text=rbid_text, size_hint_x=0.1, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2))
-
-        #scroll_view = ScrollView(size_hint=(1, None), size=(2000, 1000), pos_hint={"center_x": 0.5})
-        #with scroll_view.canvas.after:
-                #Color(1, 0, 0, 1)  # Rote Farbe
-                #line = Line(rectangle=(scroll_view.x, scroll_view.y, scroll_view.width, scroll_view.height), width=2)
-        #scroll_view.add_widget(table_layout)
-        self.table_and_input_layout.add_widget(table_layout)
-
-        input_layout = BoxLayout(orientation='vertical', size_hint_y=None, height=500, pos_hint={"center_x": 0.5})
-        round_label = Label(text=f"Round {self.current_round} - Bids", size_hint_y=None, height=100, color=(1, 1, 1, 1), font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2)
-        input_layout.add_widget(round_label)
-
-        self.bid_inputs = {}
-        for name in self.players:
-            player_box = BoxLayout(orientation='horizontal', size_hint_y=None, height=100, pos_hint={"center_x": 0.5})
-            player_label = Label(text=name, size_hint_x=0.5, color=(1, 1, 1, 1), font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2)
-            player_box.add_widget(player_label)
-
-            minus_button = Button(text="-", size_hint_x=0.2, background_color=(0.6, 0.2, 0.2, 1), color=(1, 1, 1, 1), bold=True)
-            minus_button.bind(on_press=self.decrease_bid)
-
-            bid_label = Label(text="0", size_hint_x=0.3, color=(1, 1, 1, 1), font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2)
-
-            plus_button = Button(text="+", size_hint_x=0.2, background_color=(0.2, 0.6, 0.2, 1), color=(1, 1, 1, 1), bold=True)
-            plus_button.bind(on_press=self.increase_bid)
-
-            self.bid_inputs[name] = bid_label
-
-            player_box.add_widget(minus_button)
-            player_box.add_widget(bid_label)
-            player_box.add_widget(plus_button)
-            input_layout.add_widget(player_box)
-
-        confirm_button = Button(text="Confirm Bids", size_hint_y=None, height=100, pos_hint={"center_x": 0.5}, background_color=(0.1, 0.5, 0.8, 1), color=(1, 1, 1, 1), bold=True)
-        confirm_button.bind(on_press=self.lock_bids)
-        input_layout.add_widget(confirm_button)
-
-        self.table_and_input_layout.add_widget(input_layout)
-
-    def decrease_bid(self, instance):
-        for name, label in self.bid_inputs.items():
-            if instance in label.parent.children:
-                current_value = int(label.text)
-                if current_value > 0:
-                    label.text = str(current_value - 1)
-
-    def increase_bid(self, instance):
-        for name, label in self.bid_inputs.items():
-            if instance in label.parent.children:
-                current_value = int(label.text)
-                label.text = str(current_value + 1)
-
-    def lock_bids(self, instance):
-        for name, label in self.bid_inputs.items():
-            self.bids[name][self.current_round - 1] = int(label.text)
-        self.show_received_input()
-
-    def show_received_input(self):
-        self.table_and_input_layout.clear_widgets()
-
-        table_layout = GridLayout(cols=(len(self.players)*3) + 1, size_hint_x=1, size_hint_y=None, height=1200, pos_hint={"center_x": 0.5})
-
-        table_layout.add_widget(Label(text="Round", size_hint_x=0.1, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2))
-
-        for name in self.players:
-            table_layout.add_widget(Label(text=f"{name}\n Score", size_hint_x=0.4, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2, halign="center", valign="middle", text_size=(None, None)))  # Score breiter
-            table_layout.add_widget(Label(text="B", size_hint_x=0.1, height=50, font_size=20, bold=True, outline_color=(0, 0, 0, 1), outline_width=2))  # B kleiner
-            table_layout.add_widget(Label(text="R", size_hint_x=0.1, height=50, font_size=20, bold=True, outline_color=(0, 0, 0, 1), outline_width=2))  # R auch kleiner
-
-        for round_num in range(1, self.rounds + 1):
-            table_layout.add_widget(Label(text=str(round_num), size_hint_x=0.1, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2))
-
-            for name in self.players:
-                score = self.scores[name][round_num - 1]
-                score_text = "-" if score == -1 else str(score)
-                #with score_text.canvas.after:
-                    #Color(1, 0, 0, 1)  # Rote Farbe
-                    #line = Line(rectangle=(score_text.x, score_text.y, score_text.width, score_text.height), width=2)
-                table_layout.add_widget(Label(text=score_text, size_hint_x=0.4, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2))
-
-                bid = self.bids[name][round_num - 1]
-                bid_text = "-" if bid == -1 else str(bid)
-                table_layout.add_widget(Label(text=bid_text, size_hint_x=0.1, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2))
-
-                rbid = self.received_bids[name][round_num - 1]
-                rbid_text = "-" if rbid == -1 else str(rbid)
-                table_layout.add_widget(Label(text=rbid_text, size_hint_x=0.1, height=50, font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2))
-
-        #scroll_view = ScrollView(size_hint=(1, None), size=(2000, 1000), pos_hint={"center_x": 0.5})
-        #with scroll_view.canvas.after:
-                #Color(1, 0, 0, 1)  # Rote Farbe
-                #line = Line(rectangle=(scroll_view.x, scroll_view.y, scroll_view.width, scroll_view.height), width=2)
-        #scroll_view.add_widget(table_layout)
-        self.table_and_input_layout.add_widget(table_layout)
-
-        input_layout = BoxLayout(orientation='vertical', size_hint_y=None, height=500, pos_hint={"center_x": 0.5}) 
-        round_label = Label(text=f"Round {self.current_round} - Received", size_hint_y=None, height=100, color=(1, 1, 1, 1), font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2)
-        input_layout.add_widget(round_label)
-
-        self.received_inputs = {}
-        self.extra_points = {name: 0 for name in self.players}  # Neue Variable für Extrapunkte
-
-        for name in self.players:
-            player_box = BoxLayout(orientation='horizontal', size_hint_y=None, height=100, pos_hint={"center_x": 0.5})
-            player_label = Label(text=name, size_hint_x=0.5, color=(1, 1, 1, 1), font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2)
-            player_box.add_widget(player_label)
-
-            minus_button = Button(text="-", size_hint_x=0.2, background_color=(0.6, 0.2, 0.2, 1), color=(1, 1, 1, 1), bold=True)
-            minus_button.bind(on_press=self.decrease_received)
-
-            received_label = Label(text="0", size_hint_x=0.3, color=(1, 1, 1, 1), font_size=40, bold=True, outline_color=(0, 0, 0, 1), outline_width=2)
-
-            plus_button = Button(text="+", size_hint_x=0.2, background_color=(0.2, 0.6, 0.2, 1), color=(1, 1, 1, 1), bold=True)
-            plus_button.bind(on_press=self.increase_received)
-    
-            plus_ten_button = Button(text="+10", size_hint_x=0.2, background_color=(0.8, 0.6, 0.2, 1), color=(1, 1, 1, 1), bold=True)
-            plus_ten_button.bind(on_press=lambda instance, n=name: self.add_extra_points(n))
-
-            self.received_inputs[name] = received_label
-    
-            player_box.add_widget(minus_button)
-            player_box.add_widget(received_label)
-            player_box.add_widget(plus_button)
-            player_box.add_widget(plus_ten_button)
-            input_layout.add_widget(player_box)
-
-    
+class GymMap(RelativeLayout):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
         
+        self.add_widget(Image(source='gym raumplan für app.png', allow_stretch=True, keep_ratio=False, pos_hint={"center_x": 0.5, "center_y": 0.5})) #size_hint=(1, 0.6) 
+        
+        self.aktuelle_uebung = 'Laufband'
+        #self.muskelgruppen = {'brust': 0, 'schulter': 0, 'trizeps': 0}
+        self.abgeschlossene_uebungen = set()
+        self.letzteÜbungstypen = deque()
 
-        confirm_button = Button(text="Confirm Received", size_hint_y=None, height=100, pos_hint={"center_x": 0.5}, background_color=(0.1, 0.5, 0.8, 1), color=(1, 1, 1, 1), bold=True)
-        confirm_button.bind(on_press=self.lock_received)
-        input_layout.add_widget(confirm_button)
+        self.kabelcount = 0
+        self.hantelcount = 0
+        
+        self.symbols = {}
+        for geraet in geraete:
+            img = Image(source=geraet['symbol'], size_hint=(0.1, 0.1), pos_hint={'x': geraet['pos'][0], 'y': geraet['pos'][1]})
+            img.bind(on_touch_down=lambda instance, touch, g=geraet: self.show_exercise(g, touch))
+            self.symbols[geraet['name']] = img
+            self.add_widget(img)
+            
+            if geraet['name'] != self.aktuelle_uebung:
+                img.opacity = 0.5
 
-        self.table_and_input_layout.add_widget(input_layout)
-    
-    def add_extra_points(self, player_name):
-        self.extra_points[player_name] += 10
-        print(f"{player_name} erhält 10 Extrapunkte. Gesamt: {self.extra_points[player_name]}")
+    def show_exercise(self, geraet, touch):
+        if not self.symbols[geraet['name']].collide_point(*touch.pos):
+            return
+        
+        if geraet['name'] in self.abgeschlossene_uebungen or not self.is_uebung_erlaubt(geraet):
+            return
+        
+        popup = ModalView(size_hint=(0.8, 0.5))
+        layout = RelativeLayout()
+        
+        if geraet['typ'] in ['hantel', 'kabel']:
+            if not 'trizeps' in self.letzteÜbungstypen and not 'schulter' in self.letzteÜbungstypen: 
+                title = Label(text="Trizeps oder Schulter", size_hint=(1, 0.1), pos_hint={'x': 0, 'y': 0.9}, bold=True, font_size=24)
+                layout.add_widget(title)
 
-    def decrease_received(self, instance):
-        for name, label in self.received_inputs.items():
-            if instance in label.parent.children:
-                current_value = int(label.text)
-                if current_value > 0:
-                    label.text = str(current_value - 1)
+                exercise_img = Image(source=geraet['übung'], size_hint=(1, 0.7), pos_hint={'x': 0, 'y': 0.1})
+                layout.add_widget(exercise_img)
 
-    def increase_received(self, instance):
-        for name, label in self.received_inputs.items():
-            if instance in label.parent.children:
-                current_value = int(label.text)
-                label.text = str(current_value + 1)
+                close_button = Button(text='Weiter', size_hint=(1, 0.1), pos_hint={'x': 0, 'y': 0})
+                close_button.bind(on_release=lambda instance: (popup.dismiss(), self.waehle_muskelgruppe(geraet)))
+                layout.add_widget(close_button) 
+            
+            elif not 'trizeps' in self.letzteÜbungstypen: 
+                title = Label(text="Trizeps", size_hint=(1, 0.1), pos_hint={'x': 0, 'y': 0.9}, bold=True, font_size=24)
+                layout.add_widget(title)
 
-    def lock_received(self, instance):
-        for name, label in self.received_inputs.items():
-            self.received_bids[name][self.current_round - 1] = int(label.text)
+                exercise_img = Image(source=geraet['übung'], size_hint=(1, 0.7), pos_hint={'x': 0, 'y': 0.1})
+                layout.add_widget(exercise_img)
 
-        for name in self.players:
-            bid = self.bids[name][self.current_round - 1]
-            received = self.received_bids[name][self.current_round - 1]
-            if self.current_round == 1:
-                if bid == received:
-                    if bid == 0:
-                        self.scores[name][self.current_round - 1] = self.current_round * 10
-                    else:
-                        self.scores[name][self.current_round - 1] = bid * 20
-                else:
-                    if bid == 0:
-                        self.scores[name][self.current_round - 1] = - (self.current_round * 10)
-                    else:
-                        self.scores[name][self.current_round - 1] = - abs(bid - received) * 10
-            else:
-                if bid == received:
-                    if bid == 0:
-                        self.scores[name][self.current_round - 1] = self.scores[name][self.current_round - 2] + self.current_round * 10
-                    else:
-                        self.scores[name][self.current_round - 1] = self.scores[name][self.current_round - 2] + bid * 20
-                else:
-                    if bid == 0:
-                        self.scores[name][self.current_round - 1] = self.scores[name][self.current_round - 2] - (self.current_round * 10)
-                    else:
-                        self.scores[name][self.current_round - 1] = self.scores[name][self.current_round - 2] -abs(bid - received) * 10
+                close_button = Button(text='Weiter', size_hint=(1, 0.1), pos_hint={'x': 0, 'y': 0})
+                close_button.bind(on_release=lambda instance: (self.letzteÜbungstypen.append('trizeps'), self.next_exercise(popup, geraet)))
+                layout.add_widget(close_button)
 
-            self.scores[name][self.current_round - 1] += self.extra_points[name]
+            elif not 'schulter' in self.letzteÜbungstypen:
+                title = Label(text="Schultern", size_hint=(1, 0.1), pos_hint={'x': 0, 'y': 0.9}, bold=True, font_size=24)
+                layout.add_widget(title)
 
-        if self.current_round < self.rounds:
-            self.current_round += 1
-            self.update_table_and_input()
+                exercise_img = Image(source=geraet['übung'], size_hint=(1, 0.7), pos_hint={'x': 0, 'y': 0.1})
+                layout.add_widget(exercise_img)
+
+                close_button = Button(text='Weiter', size_hint=(1, 0.1), pos_hint={'x': 0, 'y': 0})
+                close_button.bind(on_release=lambda instance: (self.letzteÜbungstypen.append('schulter'), self.next_exercise(popup, geraet)))
+                layout.add_widget(close_button)
+
+  
+
         else:
-            self.show_final_scores()
+            title = Label(text=geraet['name'], size_hint=(1, 0.1), pos_hint={'x': 0, 'y': 0.9}, bold=True, font_size=24)
+            layout.add_widget(title)
 
-    def show_final_scores(self):
-        self.main_layout.clear_widgets()
+            exercise_img = Image(source=geraet['übung'], size_hint=(1, 0.7), pos_hint={'x': 0, 'y': 0.1})
+            layout.add_widget(exercise_img)
 
-        score_layout = BoxLayout(orientation='vertical', padding=10, spacing=20, size_hint=(1, 1), pos_hint={"center_x": 0.5})
-        score_layout.add_widget(Label(text="Final Scores", size_hint_y=None, height=100, color=(1, 1, 1, 1), font_size=100, bold=True, outline_color=(0, 0, 0, 1), outline_width=4))
+            close_button = Button(text='Weiter', size_hint=(1, 0.1), pos_hint={'x': 0, 'y': 0})
+            close_button.bind(on_release=lambda instance: self.next_exercise(popup, geraet))
+            layout.add_widget(close_button)
+        
+        popup.add_widget(layout)
+        popup.open()
+    
+    def next_exercise(self, popup, abgeschlossenes_geraet):
+        popup.dismiss()
+        
+        if abgeschlossenes_geraet['typ'] == 'kabel':
+            self.kabelcount += 1
+        if abgeschlossenes_geraet['typ'] == 'hantel':
+            self.hantelcount += 1
+        if self.kabelcount == 2 or self.hantelcount == 2: 
+            self.abgeschlossene_uebungen.add(abgeschlossenes_geraet['name'])
+        
+        if abgeschlossenes_geraet['typ'] == 'laufband':
+            self.abgeschlossene_uebungen.add(abgeschlossenes_geraet['name'])
+            self.aktualisiere_verfuegbarkeit()
+            return
+        elif not abgeschlossenes_geraet['typ'] in ['hantel', 'kabel']:
+            self.letzteÜbungstypen.append(abgeschlossenes_geraet['typ'])
+            self.abgeschlossene_uebungen.add(abgeschlossenes_geraet['name'])
+    
+        self.aktualisiere_verfuegbarkeit()
+    
+    def waehle_muskelgruppe(self, geraet):
+        popup = ModalView(size_hint=(0.5, 0.3))
+        layout = RelativeLayout()
+        
+        button_trizeps = Button(text='Trizeps', size_hint=(0.5, 1), pos_hint={'x': 0, 'y': 0})
+        button_schulter = Button(text='Schulter', size_hint=(0.5, 1), pos_hint={'x': 0.5, 'y': 0})
+        
+        button_trizeps.bind(on_release=lambda instance: self.setze_muskelgruppe(popup, 'trizeps'))
+        button_schulter.bind(on_release=lambda instance: self.setze_muskelgruppe(popup, 'schulter'))
+        
+        layout.add_widget(button_trizeps)
+        layout.add_widget(button_schulter)
+        
+        popup.add_widget(layout)
+        popup.open()
 
-        for name, scores in self.scores.items():
-            total_score = self.scores[name][self.current_round - 1]
-            score_layout.add_widget(Label(text=f"{name}: {total_score} points", size_hint_y=None, height=80, color=(1, 1, 1, 1), font_size=80, bold=True, outline_color=(0, 0, 0, 1), outline_width=2))
+        
+        if geraet['typ'] == 'kabel':
+            self.kabelcount += 1
+        if geraet['typ'] == 'hantel':
+            self.hantelcount += 1
+        if self.kabelcount == 2 or self.hantelcount == 2: 
+            self.abgeschlossene_uebungen.add(geraet['name'])
+    
+    def setze_muskelgruppe(self, popup, muskelgruppe):
+        popup.dismiss()
+        self.letzteÜbungstypen.append(muskelgruppe)
+        self.aktualisiere_verfuegbarkeit()
+    
+    def is_uebung_erlaubt(self, geraet):
+        if geraet['name'] in self.abgeschlossene_uebungen:
+            return False
+        
+        if len(self.letzteÜbungstypen) == 1:
+            if geraet['typ'] == self.letzteÜbungstypen[0]:
+                return False
+            
+        if len(self.letzteÜbungstypen) == 2:
+            if geraet['typ'] == self.letzteÜbungstypen[0] or geraet['typ'] == self.letzteÜbungstypen[1]:
+                return False
+            
+        if geraet['typ'] in ['hantel', 'kabel']:
+            if 'trizeps' in self.letzteÜbungstypen and 'schulter' in self.letzteÜbungstypen:
+                return False
+        
+        return True
+    
+    def aktualisiere_verfuegbarkeit(self):
+        if len(self.letzteÜbungstypen) == 3:
+            self.letzteÜbungstypen.popleft()
+        for geraet in geraete:
+            self.symbols[geraet['name']].opacity = 1.0 if self.is_uebung_erlaubt(geraet) else 0.5
+        
+        print(self.letzteÜbungstypen)
 
-        self.main_layout.add_widget(score_layout)
-
-        self.show_score_graph()
-
-    def show_score_graph(self):
-    # Matplotlib-Diagramm erstellen
-        plt.figure(figsize=(10, 6))
-        for name, scores in self.scores.items():
-            rounds = list(range(1, self.current_round + 1))
-            plt.plot(rounds, scores[:self.current_round], label=name, marker='o')
-
-        plt.xlabel('Runde')
-        plt.ylabel('Punkte')
-        plt.title('Spielverlauf')
-        plt.legend()
-        plt.grid(True)
-
-    # Diagramm als Bild speichern
-        plt.savefig("score_graph.png")
-        plt.close()
-
-    # Bild in Kivy anzeigen
-        self.show_graph_in_app("score_graph.png")
-
-    def show_graph_in_app(self, image_path):
-        img = Image(source=image_path, size_hint=(1, 1))
-        self.main_layout.add_widget(img)
+class GymApp(App):
+    def build(self):
+        return GymMap()
 
 if __name__ == "__main__":
-    SkullKingApp().run()
+    GymApp().run()
+
 
 
 
